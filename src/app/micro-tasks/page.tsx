@@ -10,8 +10,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 // TODO: Replace with actual user ID from authentication
 const MOCK_USER_ID = "user123";
 
-// Mock historical tasks - replace with actual data fetching
-const historicalTasks = [
+interface HistoricalTask {
+  id: string;
+  text: string;
+  completed: boolean;
+  date: string;
+}
+
+// Initial mock data
+const initialHistoricalTasks: HistoricalTask[] = [
   { id: 't1', text: 'Review the useState hook in React.', completed: true, date: '2024-07-25' },
   { id: 't2', text: 'Read one article about serverless architecture.', completed: true, date: '2024-07-24' },
   { id: 't3', text: 'Watch a 5-minute video on Python list comprehensions.', completed: false, date: '2024-07-23' },
@@ -21,6 +28,7 @@ export default function MicroTasksPage() {
   const [currentTask, setCurrentTask] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false); // State for current task completion
+  const [historicalTasks, setHistoricalTasks] = useState<HistoricalTask[]>(initialHistoricalTasks); // Manage historical tasks in state
 
   const fetchNewTask = useCallback(async () => {
     setIsGenerating(true);
@@ -43,11 +51,25 @@ export default function MicroTasksPage() {
   }, [fetchNewTask]);
 
   const handleCompleteTask = () => {
+      if (!currentTask) return; // Do nothing if there's no current task
+
       // TODO: Implement logic to save task completion status (e.g., API call to Firestore)
       console.log("Task marked as complete:", currentTask);
       setIsCompleted(true);
-      // Optionally fetch a new task immediately after completion
-      // fetchNewTask();
+
+      // Add the completed task to the beginning of the historical tasks list
+      const newHistoricalTask: HistoricalTask = {
+          id: `task-${Date.now()}`, // Generate a unique ID
+          text: currentTask,
+          completed: true,
+          date: new Date().toISOString().split('T')[0], // Get current date in YYYY-MM-DD format
+      };
+
+      setHistoricalTasks(prevTasks => [newHistoricalTask, ...prevTasks]);
+
+      // Optionally fetch a new task immediately after completion, or clear the current task
+      // fetchNewTask(); // Uncomment to get a new task right away
+      // setCurrentTask(null); // Uncomment to clear the completed task view
   };
 
 
@@ -72,8 +94,11 @@ export default function MicroTasksPage() {
             {!isGenerating && currentTask && (
                 <p className="text-lg text-foreground">{currentTask}</p>
             )}
-            {!isGenerating && !currentTask && (
+            {!isGenerating && !currentTask && !isCompleted && ( // Show refresh message only if not completed
                  <p className="text-lg text-muted-foreground">Click refresh to get your task.</p>
+            )}
+             {!isGenerating && isCompleted && ( // Show message when task is completed
+                 <p className="text-lg text-green-600">Task completed! Get a new one or check your history.</p>
             )}
 
           <div className="flex space-x-2">
