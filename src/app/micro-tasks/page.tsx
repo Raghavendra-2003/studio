@@ -17,11 +17,11 @@ interface HistoricalTask {
   date: string;
 }
 
-// Initial mock data
+// Initial mock data - remove if fetching from backend
 const initialHistoricalTasks: HistoricalTask[] = [
-  { id: 't1', text: 'Review the useState hook in React.', completed: true, date: '2024-07-25' },
-  { id: 't2', text: 'Read one article about serverless architecture.', completed: true, date: '2024-07-24' },
-  { id: 't3', text: 'Watch a 5-minute video on Python list comprehensions.', completed: false, date: '2024-07-23' },
+  // { id: 't1', text: 'Review the useState hook in React.', completed: true, date: '2024-07-25' },
+  // { id: 't2', text: 'Read one article about serverless architecture.', completed: true, date: '2024-07-24' },
+  // { id: 't3', text: 'Watch a 5-minute video on Python list comprehensions.', completed: false, date: '2024-07-23' },
 ];
 
 export default function MicroTasksPage() {
@@ -47,11 +47,14 @@ export default function MicroTasksPage() {
 
   // Fetch initial task on mount
   useEffect(() => {
-    fetchNewTask();
-  }, [fetchNewTask]);
+    // Only fetch if there's no current task (e.g., on initial load)
+    if (!currentTask) {
+        fetchNewTask();
+    }
+  }, [fetchNewTask, currentTask]); // Depend on currentTask as well
 
   const handleCompleteTask = () => {
-      if (!currentTask) return; // Do nothing if there's no current task
+      if (!currentTask || isCompleted) return; // Do nothing if no task or already completed
 
       // TODO: Implement logic to save task completion status (e.g., API call to Firestore)
       console.log("Task marked as complete:", currentTask);
@@ -67,9 +70,10 @@ export default function MicroTasksPage() {
 
       setHistoricalTasks(prevTasks => [newHistoricalTask, ...prevTasks]);
 
-      // Optionally fetch a new task immediately after completion, or clear the current task
-      // fetchNewTask(); // Uncomment to get a new task right away
-      // setCurrentTask(null); // Uncomment to clear the completed task view
+      // Clear the current task state after marking as done and adding to history
+      // You might want to automatically fetch a new task here instead
+      // setCurrentTask(null); // Clears the current task display
+      // fetchNewTask(); // Fetches a new task immediately
   };
 
 
@@ -91,21 +95,21 @@ export default function MicroTasksPage() {
                     <Skeleton className="h-4 w-5/6" />
                 </div>
             )}
-            {!isGenerating && currentTask && (
+            {!isGenerating && currentTask && !isCompleted && ( // Show task only if not completed
                 <p className="text-lg text-foreground">{currentTask}</p>
             )}
-            {!isGenerating && !currentTask && !isCompleted && ( // Show refresh message only if not completed
-                 <p className="text-lg text-muted-foreground">Click refresh to get your task.</p>
+             {!isGenerating && isCompleted && currentTask && ( // Show completed message for the *current* task
+                 <p className="text-lg text-accent">Task completed! Generate a new one or check your history.</p>
             )}
-             {!isGenerating && isCompleted && ( // Show message when task is completed
-                 <p className="text-lg text-green-600">Task completed! Get a new one or check your history.</p>
+            {!isGenerating && !currentTask && ( // Initial state or after clearing task
+                 <p className="text-lg text-muted-foreground">Click 'New Task' to get started.</p>
             )}
 
           <div className="flex space-x-2">
              <Button
                 variant="default"
                 onClick={handleCompleteTask}
-                disabled={isGenerating || !currentTask || isCompleted}
+                disabled={isGenerating || !currentTask || isCompleted} // Disable if no task or already completed
                 className="bg-accent hover:bg-accent/90 text-accent-foreground"
               >
               <CheckCircle className="mr-2 h-4 w-4" />
@@ -113,7 +117,7 @@ export default function MicroTasksPage() {
             </Button>
             <Button
                 variant="outline"
-                onClick={fetchNewTask}
+                onClick={fetchNewTask} // Fetch a new task explicitly
                 disabled={isGenerating}
               >
               <RotateCcw className={`mr-2 h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
@@ -134,12 +138,17 @@ export default function MicroTasksPage() {
                     <p className={`text-sm ${task.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{task.text}</p>
                     <p className="text-xs text-muted-foreground">{new Date(task.date).toLocaleDateString()}</p>
                   </div>
-                  {task.completed && <CheckCircle className="h-5 w-5 text-green-500" />}
+                  {/* Use text-accent for completed icon color */}
+                  {task.completed && <CheckCircle className="h-5 w-5 text-accent" />}
                 </CardContent>
               </Card>
             ))
           ) : (
-            <p className="text-muted-foreground text-center">No past tasks recorded.</p>
+             <Card className="shadow-sm">
+                <CardContent className="p-4 text-center text-muted-foreground">
+                    No past tasks recorded yet. Complete your first task!
+                </CardContent>
+            </Card>
           )}
         </div>
       </div>
