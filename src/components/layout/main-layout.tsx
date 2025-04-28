@@ -1,38 +1,34 @@
+
 'use client';
 
 import * as React from 'react';
-import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'; // Import SidebarTrigger
+import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { SidebarNav } from './sidebar-nav';
 import { siteConfig } from '@/config/site';
-import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile hook
+// Removed useIsMobile hook import
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
-  const isMobile = useIsMobile();
+  // Removed isMobile state and hook usage
 
   return (
+    // Always use defaultOpen={true} and collapsible="icon" for consistency
     <SidebarProvider defaultOpen={true} collapsible="icon">
-        {/* Desktop Sidebar */}
-        <Sidebar side="left" variant="sidebar" collapsible="icon" className="shadow-md hidden md:block"> {/* Hide on mobile */}
+        {/* Always render the desktop-style sidebar */}
+        <Sidebar side="left" variant="sidebar" collapsible="icon" className="shadow-md"> {/* Removed responsive classes */}
           <SidebarNav items={siteConfig.mainNav} />
         </Sidebar>
-         {/* Mobile Sidebar Sheet (rendered by Sidebar component when isMobile is true) */}
-        <Sidebar side="left" variant="sidebar" collapsible="offcanvas" className="md:hidden"/> {/* Use offcanvas for mobile */}
+         {/* Removed Mobile Sidebar Sheet */}
 
         <SidebarInset>
-           {/* Mobile Header */}
-           {isMobile && (
-             <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
-               {/* Mobile Sidebar Trigger */}
-               <SidebarTrigger className="text-foreground" />
-               {/* You can add a logo or title here if needed for mobile */}
-               <span className="font-semibold">{siteConfig.name}</span>
-             </header>
-           )}
+           {/* Removed Mobile Header */}
+
           {/* Main Content Area */}
-          <div className="p-4 md:p-6">
+          {/* Adjust padding to be consistent if needed, removing md: prefix */}
+          <div className="p-4 sm:p-6"> {/* Use sm:p-6 or just p-6 for consistency */}
             {children}
           </div>
         </SidebarInset>
     </SidebarProvider>
   );
 }
+
