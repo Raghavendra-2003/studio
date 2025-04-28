@@ -1,7 +1,10 @@
+import type { LucideIcon } from 'lucide-react'; // Import LucideIcon type
+import { Home, BookOpen, Award, BrainCircuit } from 'lucide-react';
+
 export type NavItem = {
   title: string;
   href: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: LucideIcon; // Use LucideIcon type
   disabled?: boolean;
 };
 
@@ -11,7 +14,6 @@ export type SiteConfig = {
   mainNav: NavItem[];
 };
 
-import { Home, BookOpen, Award, BrainCircuit } from 'lucide-react';
 
 export const siteConfig: SiteConfig = {
   name: "SkillSync",
